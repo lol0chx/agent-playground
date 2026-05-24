@@ -1,6 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { evaluate } from 'mathjs';
+import { safeEvaluate } from '@/lib/math-eval';
 import { sql } from '@/lib/db';
 import { embedQuery, toPgVector } from '@/lib/embeddings';
 import {
@@ -115,8 +115,9 @@ export const tools = {
     }),
     execute: async ({ expression }): Promise<CalculateResult> => {
       const clean = sanitizeExpression(expression);
-      // mathjs evaluate() is sandboxed — no access to JS globals.
-      const result = evaluate(clean);
+      // Custom recursive-descent evaluator — pure JS, no eval/Function,
+      // so it runs on the edge runtime (where mathjs's typed-function fails).
+      const result = safeEvaluate(clean);
       return { expression: clean, result: String(result) };
     },
   }),
