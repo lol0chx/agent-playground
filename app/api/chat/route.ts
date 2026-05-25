@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type CoreMessage } from 'ai';
+import { convertToCoreMessages, streamText, type Message } from 'ai';
 import { tools } from '@/lib/tools';
 import { ipFromRequest, rateLimit } from '@/lib/rate-limit';
 
@@ -50,9 +50,9 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  let body: { messages?: CoreMessage[] };
+  let body: { messages?: Message[] };
   try {
-    body = (await req.json()) as { messages?: CoreMessage[] };
+    body = (await req.json()) as { messages?: Message[] };
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON body.' }), {
       status: 400,
@@ -60,7 +60,9 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 
-  const messages = body.messages ?? [];
+  // convertToCoreMessages turns `experimental_attachments` (data-URL images
+  // attached client-side) into multimodal `image` parts that Claude consumes.
+  const messages = convertToCoreMessages(body.messages ?? []);
 
   const result = await streamText({
     model: anthropic(CHAT_MODEL),

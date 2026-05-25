@@ -27,6 +27,9 @@ function pluckResult(inv: ToolInvocation): {
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const invocations = message.toolInvocations ?? [];
+  const attachments = (message.experimental_attachments ?? []).filter((a) =>
+    a.contentType?.startsWith('image/'),
+  );
 
   return (
     <div
@@ -46,10 +49,23 @@ export function ChatMessage({ message }: ChatMessageProps) {
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="text-xs font-medium text-muted-foreground">
           {isUser ? 'You' : 'Assistant'}
         </div>
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {attachments.map((a, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`${a.name ?? 'img'}-${i}`}
+                src={a.url}
+                alt={a.name ?? 'attached image'}
+                className="max-h-64 rounded-md border object-contain"
+              />
+            ))}
+          </div>
+        )}
         {invocations.length > 0 && (
           <div className="space-y-1">
             {invocations.map((inv) => {

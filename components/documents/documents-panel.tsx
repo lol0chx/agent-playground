@@ -1,16 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { Library } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { DocumentUploader } from '@/components/documents/document-uploader';
 import {
@@ -18,8 +15,12 @@ import {
   type DocumentEntry,
 } from '@/components/documents/document-list';
 
-export function DocumentsPanel() {
-  const [open, setOpen] = React.useState(false);
+interface DocumentsPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function DocumentsPanel({ open, onOpenChange }: DocumentsPanelProps) {
   const [documents, setDocuments] = React.useState<DocumentEntry[] | null>(
     null,
   );
@@ -48,13 +49,7 @@ export function DocumentsPanel() {
   }, [open, documents, refresh]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5">
-          <Library className="h-4 w-4" />
-          <span className="hidden sm:inline">Docs</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Documents</DialogTitle>
